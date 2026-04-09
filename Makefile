@@ -16,3 +16,12 @@ test:
 
 build:
 	./scripts/build.sh
+
+help:
+	@echo "Available targets:"
+	@echo "  make setup   - Setup development environment"
+	@echo "  make format - Format code"
+	@echo "  make lint   - Run linter"
+	@echo "  make test   - Run tests"
+	@echo "  make build  - Build project"
+	@echo "  make help   - Show this help message"
