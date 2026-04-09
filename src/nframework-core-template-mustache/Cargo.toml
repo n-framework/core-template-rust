@@ -7,3 +7,7 @@ edition = "2024"
 nframework-core-template-abstractions = { path = "../nframework-core-template-abstractions" }
 mustache = "0.9"
 serde_json = "1"
+log = "0.4"
+
+[dev-dependencies]
+env_logger = "0.11"

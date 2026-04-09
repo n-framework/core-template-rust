@@ -1,3 +1,3 @@
 pub mod template_error;
 
-pub use template_error::TemplateError;
+pub use template_error::{TemplateError, TemplateErrorKind};
