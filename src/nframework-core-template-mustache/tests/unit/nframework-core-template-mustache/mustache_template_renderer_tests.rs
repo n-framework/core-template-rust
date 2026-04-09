@@ -243,7 +243,7 @@ fn test_thread_safety_concurrent_renders() {
         .collect();
 
     for handle in handles {
-        handle.join().unwrap();
+        let _ = handle.join().unwrap();
     }
 }
 
@@ -257,7 +257,7 @@ fn test_thread_safety_shared_renderer() {
     context.insert("name", "World");
 
     // Multiple threads accessing the same renderer
-    let result_clone = Arc::clone(&result);
+    let _result_clone = Arc::clone(&result);
     let handles: Vec<_> = (0..4)
         .map(|_| {
             let renderer = Arc::clone(&renderer);
@@ -274,7 +274,7 @@ fn test_thread_safety_shared_renderer() {
         .collect();
 
     for handle in handles {
-        handle.join().unwrap();
+        let _ = handle.join().unwrap();
     }
 
     let final_result = result.lock().unwrap();
