@@ -1,6 +1,6 @@
-[package]
-name = "core-template-rust"
-version = "0.1.0"
-edition = "2024"
-
-[dependencies]
+[workspace]
+members = [
+  "src/nframework-core-template-abstractions",
+  "src/nframework-core-template-mustache",
+]
+resolver = "2"
