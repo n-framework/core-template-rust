@@ -9,7 +9,7 @@ use serde_json::Value;
 ///
 /// # Example
 /// ```
-/// use nframework_core_template_abstractions::TemplateContext;
+/// use n_framework_core_template_abstractions::TemplateContext;
 ///
 /// let mut context = TemplateContext::empty();
 /// context.insert("name", "World");

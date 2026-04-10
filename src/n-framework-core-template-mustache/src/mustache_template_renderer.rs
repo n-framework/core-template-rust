@@ -3,7 +3,7 @@ use std::path::Path;
 use std::sync::{Arc, RwLock};
 
 use log::{debug, error, info, warn};
-use nframework_core_template_abstractions::{
+use n_framework_core_template_abstractions::{
     FileGenerator, TemplateContext, TemplateError, TemplateRenderer,
 };
 

@@ -22,7 +22,7 @@ pub enum TemplateErrorKind {
 ///
 /// # Example
 /// ```
-/// use nframework_core_template_abstractions::{TemplateError, TemplateErrorKind};
+/// use n_framework_core_template_abstractions::{TemplateError, TemplateErrorKind};
 ///
 /// let error = TemplateError::new(TemplateErrorKind::Parse("invalid template".to_string()));
 /// assert!(error.message().contains("invalid template"));

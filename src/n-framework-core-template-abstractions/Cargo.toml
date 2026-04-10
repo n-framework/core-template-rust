@@ -1,5 +1,5 @@
 [package]
-name = "nframework-core-template-abstractions"
+name = "n-framework-core-template-abstractions"
 version = "0.1.0"
 edition = "2024"
 

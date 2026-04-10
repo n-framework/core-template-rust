@@ -1,6 +1,6 @@
 [workspace]
 members = [
-  "src/nframework-core-template-abstractions",
-  "src/nframework-core-template-mustache",
+  "src/n-framework-core-template-abstractions",
+  "src/n-framework-core-template-mustache",
 ]
 resolver = "2"

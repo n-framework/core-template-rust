@@ -1,9 +1,9 @@
 use std::sync::{Arc, Mutex};
 use std::thread;
 
-use nframework_core_template_abstractions::{TemplateContext, TemplateRenderer};
+use n_framework_core_template_abstractions::{TemplateContext, TemplateRenderer};
 
-use nframework_core_template_mustache::MustacheTemplateRenderer;
+use n_framework_core_template_mustache::MustacheTemplateRenderer;
 
 #[test]
 fn test_mustache_template_renderer_renders_simple_variable() {

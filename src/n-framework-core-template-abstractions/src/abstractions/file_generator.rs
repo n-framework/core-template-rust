@@ -28,7 +28,7 @@ pub enum OverwritePolicy {
 ///
 /// # Example
 /// ```
-/// use nframework_core_template_abstractions::{FileGenerator, TemplateContext};
+/// use n_framework_core_template_abstractions::{FileGenerator, TemplateContext};
 /// use std::path::Path;
 ///
 /// fn example_usage<G: FileGenerator>(generator: &G, context: &TemplateContext) {

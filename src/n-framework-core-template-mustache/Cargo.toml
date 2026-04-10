@@ -1,10 +1,10 @@
 [package]
-name = "nframework-core-template-mustache"
+name = "n-framework-core-template-mustache"
 version = "0.1.0"
 edition = "2024"
 
 [dependencies]
-nframework-core-template-abstractions = { path = "../nframework-core-template-abstractions" }
+n-framework-core-template-abstractions = { path = "../n-framework-core-template-abstractions" }
 mustache = "0.9"
 serde_json = "1"
 log = "0.4"

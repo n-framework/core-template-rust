@@ -1,6 +1,6 @@
 use std::collections::BTreeMap;
 
-use nframework_core_template_abstractions::TemplateContext;
+use n_framework_core_template_abstractions::TemplateContext;
 use serde_json::Value;
 
 #[test]

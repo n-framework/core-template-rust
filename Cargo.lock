@@ -158,20 +158,20 @@ dependencies = [
 ]
 
 [[package]]
-name = "nframework-core-template-abstractions"
+name = "n-framework-core-template-abstractions"
 version = "0.1.0"
 dependencies = [
  "serde_json",
 ]
 
 [[package]]
-name = "nframework-core-template-mustache"
+name = "n-framework-core-template-mustache"
 version = "0.1.0"
 dependencies = [
  "env_logger",
  "log 0.4.29",
  "mustache",
- "nframework-core-template-abstractions",
+ "n-framework-core-template-abstractions",
  "serde_json",
 ]
 

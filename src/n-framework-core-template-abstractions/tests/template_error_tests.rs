@@ -1,6 +1,6 @@
 use std::error::Error;
 
-use nframework_core_template_abstractions::TemplateError;
+use n_framework_core_template_abstractions::TemplateError;
 
 #[test]
 fn test_template_error_new_parse() {
@@ -61,7 +61,7 @@ fn test_template_error_debug() {
 fn test_template_error_with_source() {
     let inner = std::io::Error::new(std::io::ErrorKind::NotFound, "file not found");
     let error = TemplateError::with_source(
-        nframework_core_template_abstractions::TemplateErrorKind::Io(
+        n_framework_core_template_abstractions::TemplateErrorKind::Io(
             "failed to read file".to_string(),
         ),
         inner,
@@ -75,6 +75,6 @@ fn test_template_error_kind() {
     let error = TemplateError::parse("test");
     assert!(matches!(
         error.kind(),
-        nframework_core_template_abstractions::TemplateErrorKind::Parse(_)
+        n_framework_core_template_abstractions::TemplateErrorKind::Parse(_)
     ));
 }
