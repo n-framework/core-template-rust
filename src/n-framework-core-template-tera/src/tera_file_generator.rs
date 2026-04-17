@@ -74,30 +74,51 @@ where
             let rel_path_str = rel_path.to_string_lossy();
             let rendered_rel_path = self.renderer.render_content(&rel_path_str, context)?;
 
-            let mut dest_path = output_root.join(rendered_rel_path);
+            let dest_path = output_root.join(rendered_rel_path);
+            
+            // SECURITY: Ensure the normalized destination path does not escape output_root
+            let canonical_output_root = output_root.canonicalize().unwrap_or(output_root.to_path_buf());
+            let canonical_dest = if dest_path.exists() {
+                dest_path.canonicalize().unwrap_or(dest_path.clone())
+            } else {
+                let parent = dest_path.parent().unwrap_or(&dest_path);
+                let canonical_parent = parent.canonicalize().unwrap_or(parent.to_path_buf());
+                canonical_parent.join(dest_path.file_name().unwrap_or_default())
+            };
+            
+            // Fallback string matching if canonicalize fails
+            let dest_str = dest_path.to_string_lossy();
+            if dest_str.contains("..") || !canonical_dest.starts_with(&canonical_output_root) {
+                 return Err(TemplateError::validation(format!(
+                    "unsafe rendered path escapes output root: {}", dest_path.display()
+                )));
+            }
+            
+            let mut dest_path_mut = dest_path.clone();
 
             if path.is_dir() {
-                fs::create_dir_all(&dest_path).map_err(|e| {
+                fs::create_dir_all(&dest_path_mut).map_err(|e| {
                     TemplateError::io(format!(
                         "failed to create directory {}: {}",
-                        dest_path.display(),
+                        dest_path_mut.display(),
                         e
                     ))
                 })?;
             } else {
                 // Strip .tera extension if present
-                if let Some(ext) = dest_path.extension().map(|e| e.to_string_lossy())
+                if let Some(ext) = dest_path_mut.extension().map(|e| e.to_string_lossy())
                     && ext == "tera"
                 {
-                    dest_path.set_extension("");
+                    dest_path_mut.set_extension("");
                 }
 
                 // Ensure parent directory exists
-                if let Some(parent) = dest_path.parent() {
+                if let Some(parent) = dest_path_mut.parent() {
+
                     fs::create_dir_all(parent).map_err(|e| {
                         TemplateError::io(format!(
                             "failed to create parent directory for {}: {}",
-                            dest_path.display(),
+                            dest_path_mut.display(),
                             e
                         ))
                     })?;
@@ -114,10 +135,10 @@ where
 
                 let rendered_content = self.renderer.render_content(&content, context)?;
 
-                fs::write(&dest_path, rendered_content).map_err(|e| {
+                fs::write(&dest_path_mut, rendered_content).map_err(|e| {
                     TemplateError::io(format!(
                         "failed to write output file {}: {}",
-                        dest_path.display(),
+                        dest_path_mut.display(),
                         e
                     ))
                 })?;
