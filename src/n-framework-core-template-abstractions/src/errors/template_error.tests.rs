@@ -1,6 +1,5 @@
+use super::*;
 use std::error::Error;
-
-use n_framework_core_template_abstractions::TemplateError;
 
 #[test]
 fn test_template_error_new_parse() {
@@ -61,9 +60,7 @@ fn test_template_error_debug() {
 fn test_template_error_with_source() {
     let inner = std::io::Error::new(std::io::ErrorKind::NotFound, "file not found");
     let error = TemplateError::with_source(
-        n_framework_core_template_abstractions::TemplateErrorKind::Io(
-            "failed to read file".to_string(),
-        ),
+        TemplateErrorKind::Io("failed to read file".to_string()),
         inner,
     );
     assert!(error.message().contains("I/O error"));
@@ -73,8 +70,5 @@ fn test_template_error_with_source() {
 #[test]
 fn test_template_error_kind() {
     let error = TemplateError::parse("test");
-    assert!(matches!(
-        error.kind(),
-        n_framework_core_template_abstractions::TemplateErrorKind::Parse(_)
-    ));
+    assert!(matches!(error.kind(), TemplateErrorKind::Parse(_)));
 }

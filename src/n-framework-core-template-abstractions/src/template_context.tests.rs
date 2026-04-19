@@ -1,7 +1,6 @@
-use std::collections::BTreeMap;
-
-use n_framework_core_template_abstractions::TemplateContext;
+use super::*;
 use serde_json::Value;
+use std::collections::BTreeMap;
 
 #[test]
 fn test_template_context_new() {
@@ -63,4 +62,57 @@ fn test_template_context_insert_overwrites() {
     context.insert("key", "second");
 
     assert_eq!(context.get_str("key"), Some("second"));
+}
+
+#[test]
+fn test_insert_and_get_string() {
+    let mut context = TemplateContext::empty();
+    context.insert("name", "World");
+    assert_eq!(context.get_str("name"), Some("World"));
+}
+
+#[test]
+fn test_insert_number() {
+    let mut context = TemplateContext::empty();
+    context.insert_number("count", 42.0);
+    assert_eq!(context.get_number("count"), Some(42.0));
+}
+
+#[test]
+fn test_insert_bool() {
+    let mut context = TemplateContext::empty();
+    context.insert_bool("active", true);
+    assert_eq!(context.get_bool("active"), Some(true));
+}
+
+#[test]
+fn test_insert_value() {
+    let mut context = TemplateContext::empty();
+    context.insert_value("data", serde_json::json!({"key": "value"}));
+    assert!(context.get("data").is_some());
+}
+
+#[test]
+fn test_iter_abstractions() {
+    let mut context = TemplateContext::empty();
+    context.insert("a", "1");
+    context.insert("b", "2");
+    let items: Vec<_> = context.iter().collect();
+    assert_eq!(items.len(), 2);
+}
+
+#[test]
+fn test_to_json() {
+    let mut context = TemplateContext::empty();
+    context.insert("name", "World");
+    let json = context.to_json();
+    assert_eq!(json["name"], "World");
+}
+
+#[test]
+fn test_from_json() {
+    let json = serde_json::json!({"name": "World", "count": 42});
+    let context = TemplateContext::from_json(json);
+    assert!(context.is_some());
+    assert_eq!(context.unwrap().get_str("name"), Some("World"));
 }

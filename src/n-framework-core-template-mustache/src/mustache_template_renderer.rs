@@ -331,3 +331,7 @@ where
         Ok(rendered_path)
     }
 }
+
+#[cfg(test)]
+#[path = "mustache_template_renderer.tests.rs"]
+mod tests;

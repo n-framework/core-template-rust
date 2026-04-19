@@ -1,9 +1,7 @@
+use super::*;
+use n_framework_core_template_abstractions::{TemplateContext, TemplateRenderer};
 use std::sync::{Arc, Mutex};
 use std::thread;
-
-use n_framework_core_template_abstractions::{TemplateContext, TemplateRenderer};
-
-use n_framework_core_template_mustache::MustacheTemplateRenderer;
 
 #[test]
 fn test_mustache_template_renderer_renders_simple_variable() {
@@ -124,14 +122,11 @@ fn test_mustache_template_renderer_default() {
     assert!(result.is_ok());
 }
 
-// === Additional Mustache Feature Tests ===
-
 #[test]
 fn test_mustache_comments_are_removed() {
     let renderer = MustacheTemplateRenderer::new();
     let context = TemplateContext::empty();
 
-    // Comments {{! comment }} should be removed from output
     let template = "Hello {{! This is a comment }}World!";
     let result = renderer.render_content(template, &context);
 
@@ -145,7 +140,6 @@ fn test_mustache_set_delimiter() {
     let mut context = TemplateContext::empty();
     context.insert("name", "World");
 
-    // Change delimiters using {{= =}}
     let template = "{{= << >> =}}Hello <<name>>!";
     let result = renderer.render_content(template, &context);
 
@@ -189,12 +183,10 @@ fn test_template_caching() {
 
     let template = "Hello {{name}}!";
 
-    // First render - cache miss
     let result1 = renderer.render_content(template, &context);
     assert!(result1.is_ok());
     assert_eq!(renderer.cache_size().unwrap(), 1);
 
-    // Second render - cache hit
     let result2 = renderer.render_content(template, &context);
     assert!(result2.is_ok());
     assert_eq!(renderer.cache_size().unwrap(), 1);
@@ -206,13 +198,11 @@ fn test_template_cache_clear() {
     let mut context = TemplateContext::empty();
     context.insert("name", "World");
 
-    // Render some templates
     renderer
         .render_content("Hello {{name}}!", &context)
         .unwrap();
     assert_eq!(renderer.cache_size().unwrap(), 1);
 
-    // Clear cache
     renderer.clear_cache().unwrap();
     assert_eq!(renderer.cache_size().unwrap(), 0);
 }
@@ -226,7 +216,6 @@ fn test_thread_safety_concurrent_renders() {
     let template = "Hello {{name}}!".to_string();
     let context_clone = context.clone();
 
-    // Spawn multiple threads that render concurrently
     let handles: Vec<_> = (0..4)
         .map(|_| {
             let renderer = Arc::clone(&renderer);
@@ -256,8 +245,6 @@ fn test_thread_safety_shared_renderer() {
     let mut context = TemplateContext::empty();
     context.insert("name", "World");
 
-    // Multiple threads accessing the same renderer
-    let _result_clone = Arc::clone(&result);
     let handles: Vec<_> = (0..4)
         .map(|_| {
             let renderer = Arc::clone(&renderer);

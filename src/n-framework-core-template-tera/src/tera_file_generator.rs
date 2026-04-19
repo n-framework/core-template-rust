@@ -327,3 +327,7 @@ where
         self.generate_internal(template_root, output_root, context, overwrite_policy, true)
     }
 }
+
+#[cfg(test)]
+#[path = "tera_file_generator.tests.rs"]
+mod tests;

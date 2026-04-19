@@ -135,3 +135,7 @@ impl Error for TemplateError {
         self.source.as_ref().map(|e| e.as_ref() as _)
     }
 }
+
+#[cfg(test)]
+#[path = "template_error.tests.rs"]
+mod tests;

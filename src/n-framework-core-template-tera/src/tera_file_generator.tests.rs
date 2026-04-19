@@ -1,5 +1,6 @@
+use super::*;
+use crate::TeraTemplateRenderer;
 use n_framework_core_template_abstractions::{FileGenerator, TemplateContext};
-use n_framework_core_template_tera::{TeraFileGenerator, TeraTemplateRenderer};
 use serde_json::json;
 use std::fs;
 use tempfile::tempdir;
