@@ -1,6 +1,22 @@
 //! Tera template generation module.
 //!
-//! Provides a file generator that supports folder rendering and path interpolation securely.
+//! This module implements the `FileGenerator` and `AtomicFileGenerator` traits using the Tera
+//! engine. It provides recursive directory traversal, template rendering, and secure path
+//! interpolation.
+//!
+//! # Security Features
+//!
+//! The generator implements a defense-in-depth approach to prevent path traversal attacks:
+//! 1. **Path Interpolation Sanitization**: Rendered relative paths are checked for `..` sequences.
+//! 2. **Canonicalization Boundary Check**: Both the output root and the destination paths are
+//!    canonicalized (resolving symlinks and `..`) and verified to ensure the destination remains
+//!    within the output root.
+//! 3. **Input Validation**: Template roots must be existing directories.
+//!
+//! # Atomicity
+//!
+//! When using `generate_atomic`, the generator tracks all created files and directories. If
+//! rendering fails at any point, it attempts to roll back all changes in reverse order.
 
 use crate::TeraTemplateRenderer;
 use log::{debug, error, info, warn};
@@ -121,6 +137,10 @@ where
             TemplateError::security(msg)
         })?;
 
+        // SECURITY: We iterate through the template root and render each path.
+        // Each rendered path is validated against the canonical_output_root to prevent
+        // templates from writing files outside the intended directory via malicious
+        // path interpolation variables (e.g. {{ name }} = "../../../etc/passwd").
         for entry in WalkDir::new(template_root) {
             let entry = entry.map_err(|e| {
                 let msg = format!("failed to walk directory: {}", e);
@@ -191,8 +211,14 @@ where
             let dest_str = dest_path.to_string_lossy();
             if dest_str.contains("..") || !canonical_dest.starts_with(&canonical_output_root) {
                 let msg = format!(
-                    "unsafe rendered path escapes output root: {}",
-                    dest_path.display()
+                    "SECURITY VIOLATION: Unsafe rendered path escapes output root.\n\
+                     Rendered Path: {}\n\
+                     Canonical Path: {}\n\
+                     Output Root: {}\n\
+                     Check your template variables and path interpolation logic for malicious inputs like '../'.",
+                    dest_path.display(),
+                    canonical_dest.display(),
+                    canonical_output_root.display()
                 );
                 error!("{}", msg);
                 return Err(TemplateError::security(msg));

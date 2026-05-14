@@ -1,11 +1,13 @@
-use std::collections::BTreeMap;
-
+use crate::errors::TemplateError;
 use serde_json::Value;
+use std::collections::BTreeMap;
 
 /// A context for template rendering, containing key-value pairs
 /// that are substituted into templates.
 ///
 /// Supports structured data including strings, numbers, booleans, arrays, and objects.
+/// Keys are validated to ensure compatibility with most template engines (alphanumeric,
+/// underscores, hyphens, and must start with a letter or underscore).
 ///
 /// # Example
 /// ```
@@ -25,6 +27,9 @@ pub struct TemplateContext {
 
 impl TemplateContext {
     /// Creates a new TemplateContext with the given values.
+    ///
+    /// # Note
+    /// This method does not validate keys. Use `try_insert` for validated insertion.
     pub fn new(values: BTreeMap<String, Value>) -> Self {
         Self { values }
     }
@@ -34,29 +39,152 @@ impl TemplateContext {
         Self::default()
     }
 
+    /// Validates if a key is safe for template engines.
+    ///
+    /// Rules:
+    /// - Must not be empty
+    /// - Must start with an ASCII letter or underscore
+    /// - Must contain only ASCII alphanumeric characters, underscores, or hyphens
+    pub fn is_valid_key(key: &str) -> bool {
+        if key.is_empty() {
+            return false;
+        }
+
+        let first = key.chars().next().unwrap();
+        if !first.is_ascii_alphabetic() && first != '_' {
+            return false;
+        }
+
+        key.chars()
+            .all(|c| c.is_ascii_alphanumeric() || c == '_' || c == '-')
+    }
+
     /// Inserts a string value into the context.
+    ///
+    /// # Panics
+    /// Panics if the key is invalid. Use `try_insert` for safe insertion.
     pub fn insert(&mut self, key: impl Into<String>, value: impl Into<String>) {
-        self.values.insert(key.into(), Value::String(value.into()));
+        let key_str = key.into();
+        if !Self::is_valid_key(&key_str) {
+            panic!("Invalid template context key: '{}'", key_str);
+        }
+        self.values.insert(key_str, Value::String(value.into()));
+    }
+
+    /// Tries to insert a string value into the context.
+    ///
+    /// Returns an error if the key is invalid.
+    pub fn try_insert(
+        &mut self,
+        key: impl Into<String>,
+        value: impl Into<String>,
+    ) -> Result<(), TemplateError> {
+        let key_str = key.into();
+        if !Self::is_valid_key(&key_str) {
+            return Err(TemplateError::validation(format!(
+                "invalid context key: '{}'",
+                key_str
+            )));
+        }
+        self.values.insert(key_str, Value::String(value.into()));
+        Ok(())
     }
 
     /// Inserts a numeric value into the context.
+    ///
+    /// # Panics
+    /// Panics if the key is invalid.
     pub fn insert_number(&mut self, key: impl Into<String>, value: f64) {
+        let key_str = key.into();
+        if !Self::is_valid_key(&key_str) {
+            panic!("Invalid template context key: '{}'", key_str);
+        }
         self.values.insert(
-            key.into(),
+            key_str,
             serde_json::Number::from_f64(value)
                 .map(Value::Number)
                 .unwrap_or(Value::Null),
         );
     }
 
+    /// Tries to insert a numeric value into the context.
+    pub fn try_insert_number(
+        &mut self,
+        key: impl Into<String>,
+        value: f64,
+    ) -> Result<(), TemplateError> {
+        let key_str = key.into();
+        if !Self::is_valid_key(&key_str) {
+            return Err(TemplateError::validation(format!(
+                "invalid context key: '{}'",
+                key_str
+            )));
+        }
+        self.values.insert(
+            key_str,
+            serde_json::Number::from_f64(value)
+                .map(Value::Number)
+                .unwrap_or(Value::Null),
+        );
+        Ok(())
+    }
+
     /// Inserts a boolean value into the context.
+    ///
+    /// # Panics
+    /// Panics if the key is invalid.
     pub fn insert_bool(&mut self, key: impl Into<String>, value: bool) {
-        self.values.insert(key.into(), Value::Bool(value));
+        let key_str = key.into();
+        if !Self::is_valid_key(&key_str) {
+            panic!("Invalid template context key: '{}'", key_str);
+        }
+        self.values.insert(key_str, Value::Bool(value));
+    }
+
+    /// Tries to insert a boolean value into the context.
+    pub fn try_insert_bool(
+        &mut self,
+        key: impl Into<String>,
+        value: bool,
+    ) -> Result<(), TemplateError> {
+        let key_str = key.into();
+        if !Self::is_valid_key(&key_str) {
+            return Err(TemplateError::validation(format!(
+                "invalid context key: '{}'",
+                key_str
+            )));
+        }
+        self.values.insert(key_str, Value::Bool(value));
+        Ok(())
     }
 
     /// Inserts a JSON value directly into the context.
+    ///
+    /// # Panics
+    /// Panics if the key is invalid.
     pub fn insert_value(&mut self, key: impl Into<String>, value: Value) {
-        self.values.insert(key.into(), value);
+        let key_str = key.into();
+        if !Self::is_valid_key(&key_str) {
+            panic!("Invalid template context key: '{}'", key_str);
+        }
+        self.values.insert(key_str, value);
+    }
+
+    /// Tries to insert a JSON value directly into the context.
+    pub fn try_insert_value(
+        &mut self,
+        key: impl Into<String>,
+        value: Value,
+    ) -> Result<(), TemplateError> {
+        let key_str = key.into();
+        if !Self::is_valid_key(&key_str) {
+            return Err(TemplateError::validation(format!(
+                "invalid context key: '{}'",
+                key_str
+            )));
+        }
+        self.values.insert(key_str, value);
+        Ok(())
     }
 
     /// Gets a value by key, returning None if not found.

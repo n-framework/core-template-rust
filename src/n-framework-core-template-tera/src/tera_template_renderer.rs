@@ -2,6 +2,7 @@
 
 use log::debug;
 use n_framework_core_template_abstractions::{TemplateContext, TemplateError, TemplateRenderer};
+use std::sync::{Arc, RwLock};
 use tera::Tera;
 
 /// Macro for extracting typed values from Tera's dynamic Value type.
@@ -9,10 +10,10 @@ use tera::Tera;
 /// Provides consistent error messaging when filter arguments have unexpected types.
 ///
 /// # Arguments
-/// - `$filter_name`: Name of the filter (for error messages)
-/// - `$arg_name`: Argument name being extracted
-/// - `$ty`: Expected type
-/// - `$value`: The tera::Value to extract from
+/// - $filter_name: Name of the filter (for error messages)
+/// - $arg_name: Argument name being extracted
+/// - $ty: Expected type
+/// - $value: The tera::Value to extract from
 macro_rules! try_get_value {
     ($filter_name:expr, $arg_name:expr, $ty:ty, $value:expr) => {
         match tera::from_value::<$ty>($value.clone()) {
@@ -32,16 +33,34 @@ macro_rules! try_get_value {
 
 /// Tera-based template renderer.
 ///
-/// Current design employs a stateless trait wrapper that spins up a new independent Tera
-/// environment for each file content evaluation. This is safe, ensures zero side effects
-/// between files, but should be optimized dynamically via caching if performance is impacted.
-#[derive(Debug, Clone, Default)]
-pub struct TeraTemplateRenderer;
+/// This implementation maintains a pre-configured Tera instance to avoid the overhead
+/// of re-registering filters and re-initializing the engine on every render call.
+/// It uses interior mutability (Arc<RwLock>) to satisfy the thread-safe requirement
+/// while allowing Tera to cache templates during rendering.
+#[derive(Debug, Clone)]
+pub struct TeraTemplateRenderer {
+    tera: Arc<RwLock<Tera>>,
+}
 
 impl TeraTemplateRenderer {
-    /// Creates a new, stateless TeraTemplateRenderer.
+    /// Creates a new TeraTemplateRenderer and registers all custom filters.
     pub fn new() -> Self {
-        Self
+        let mut tera = Tera::default();
+
+        tera.register_filter("slugify", slugify_filter);
+        tera.register_filter("pascal_case", pascal_case_filter);
+        tera.register_filter("snake_case", snake_case_filter);
+        tera.register_filter("sentence_case", sentence_case_filter);
+
+        Self {
+            tera: Arc::new(RwLock::new(tera)),
+        }
+    }
+}
+
+impl Default for TeraTemplateRenderer {
+    fn default() -> Self {
+        Self::new()
     }
 }
 
@@ -56,15 +75,13 @@ impl TemplateRenderer for TeraTemplateRenderer {
             context.iter().count()
         );
 
-        let mut tera = Tera::default();
-
-        tera.register_filter("slugify", slugify_filter);
-        tera.register_filter("pascal_case", pascal_case_filter);
-        tera.register_filter("snake_case", snake_case_filter);
-        tera.register_filter("sentence_case", sentence_case_filter);
-
         let tera_context = tera::Context::from_serialize(context.to_json())
             .map_err(|e| TemplateError::render(format!("failed to create context: {}", e)))?;
+
+        let mut tera = self
+            .tera
+            .write()
+            .map_err(|e| TemplateError::render(format!("failed to acquire write lock: {}", e)))?;
 
         tera.render_str(template_content, &tera_context)
             .map_err(|e| TemplateError::render(format!("failed to render template: {}", e)))
