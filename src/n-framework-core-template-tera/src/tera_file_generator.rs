@@ -154,12 +154,6 @@ where
                 continue;
             }
 
-            if let Some(file_name) = path.file_name()
-                && file_name == "template.yaml"
-            {
-                continue;
-            }
-
             let rel_path = path.strip_prefix(template_root).map_err(|e| {
                 let msg = format!("failed to map relative path: {}", e);
                 error!("{}", msg);

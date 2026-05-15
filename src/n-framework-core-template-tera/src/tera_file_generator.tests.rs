@@ -15,7 +15,6 @@ fn test_basic_file_generation() {
 
     fs::create_dir_all(&template_root).unwrap();
     fs::write(template_root.join("hello.txt.tera"), "Hello {{ name }}!").unwrap();
-    fs::write(template_root.join("template.yaml"), "name: 'test'").unwrap(); // verify ignore
 
     let generator = TeraFileGenerator::new(TeraTemplateRenderer::new());
     let mut ctx_data = std::collections::BTreeMap::new();
@@ -29,7 +28,6 @@ fn test_basic_file_generation() {
     let output_file = output_root.join("hello.txt");
     assert!(output_file.exists());
     assert_eq!(fs::read_to_string(output_file).unwrap(), "Hello World!");
-    assert!(!output_root.join("template.yaml").exists());
 }
 
 #[test]
